@@ -1,8 +1,8 @@
-// Dependencies
+//----- Dependencies
 const inquirer = require("inquirer");
 var mysql = require("mysql");
 
-// Database Connection
+//----- Database Connection
 var connection = mysql.createConnection({
     host: "localhost",
 
@@ -17,14 +17,14 @@ var connection = mysql.createConnection({
     database: "company_db"
 });
 
-// On connection, start inquirer
+//----- On connection, start inquirer
 connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId + "\n");
     userPrompt();
 });
 
-// (READ/GET) Functions 
+//----- (READ/GET) Functions 
 function viewAll(data) {
     connection.query("SELECT * FROM company_db.employee", data, function(err, results) {
         if (err) throw err;
@@ -32,7 +32,7 @@ function viewAll(data) {
     })
 };
 
-// stuck below
+// NOT WORKING - MINIMUM
 function viewByDepartment(data) {
     connection.query("SELECT * FROM company_db.employee JOIN company_db.role ON company_db.employee.role_id=company_db.role.id", data, function(err, results) {
         if (err) throw err;
@@ -40,19 +40,22 @@ function viewByDepartment(data) {
     })
 };
 
+// NOT WORKING - MINIMUM
 function viewByRole() {
 
 };
 
+// NOT WORKING - NTH
 function viewByManager() {
 
 };
 
+// NOT WORKING - NTH
 function viewBudget() {
 
 };
 
-// (CREATE/POST) Functions to add role, department or employee
+//----- (CREATE/POST) Functions to add role, department or employee
 function addType(x) {
     inquirer
         .prompt(
@@ -71,13 +74,13 @@ function addType(x) {
             }).then(function (answer) {
                 switch (answer.addType) {
                     case "Department":
-                        // addDepartment();
+                        addDepartment();
                         break;
                     case "Role":
-                        // addRole();
+                        addRole();
                         break;
                     case "Employee":
-                        // addEmployee();
+                        addEmployee();
                         break;
                     case "Return":
                         userPrompt();
@@ -85,16 +88,24 @@ function addType(x) {
                 }
             });
         }
-// addRole
-// addDepartment
-// function addEmployee() {
-//     console.log("Creating a new employee...\n");
-//     var query = connection.query(
-//         "INSERT INTO employee SET ?"
-//     )
-// }
 
-// (REMOVE/DELETE) Functions to delete role, department or employee
+    // addRole - NOT WORKING - MINIMUM
+function addRole() {
+
+};
+    // addDepartment - NOT WORKING - MINIMUM
+function addDepartment() {
+
+};
+    // addEmployee - NOT WORKING - MINIMUM
+function addEmployee() {
+    console.log("Creating a new employee...\n");
+    var query = connection.query(
+        "INSERT INTO employee SET ?"
+    )
+}
+
+//----- (REMOVE/DELETE) Functions to delete role, department or employee
 function deleteType(x) {
     inquirer
         .prompt(
@@ -113,33 +124,45 @@ function deleteType(x) {
             }).then(function (answer) {
                 switch (answer.deleteType) {
                     case "Department":
-                        // deleteDepartment();
+                        deleteDepartment();
                         break;
                     case "Role":
-                        // deleteRole();
+                        deleteRole();
                         break;
                     case "Employee":
-                        // deleteEmployee();
+                        deleteEmployee();
                         break;
                     case "Return":
-                        // userPrompt();
+                        userPrompt();
                         break;
                 }
             });
         }
-// deleteRole
-// deleteDepartment
-// deleteEmployee
+    // deleteRole - NOT WORKING - NTH
+function deleteRole() {
 
-// (CHANGE/MODIFY) Functions to mod
-function changeRole() {
+};
+    // deleteDepartment - NOT WORKING - NTH
+function deleteDepartment() {
+
+};
+    // deleteEmployee - NOT WORKING - NTH
+function deleteEmployee() {
 
 };
 
+//----- (CHANGE/MODIFY) Functions to mod
+
+// NOT WORKING - MINIMUM
+function changeRole() {
+
+};
+// NOT WORKING - NTH
 function updateManager() {
 
 };
 
+//----- Function to run starting inquirer
 function userPrompt() {
     inquirer
         .prompt(
@@ -173,13 +196,13 @@ function userPrompt() {
                         viewByDepartment();
                         break;
                     case "View employees by role.":
-                        // viewByRole();
+                        viewByRole();
                         break;
                     case "View employees by manager.":
-                        // viewByManager();
+                        viewByManager();
                         break;
                     case "View the total utilized budget of a department.":
-                        // viewBudget();
+                        viewBudget();
                         break;
                     case "Add a department, role, or employee.":
                         addType(answer.actionChoice);
@@ -188,10 +211,10 @@ function userPrompt() {
                         deleteType(answer.actionChoice);
                         break;
                     case "Change an employee's role.":
-                        // changeRole();
+                        changeRole();
                         break;
                     case "Update an employee's manager.":
-                        // updateManager();
+                        updateManager();
                         break;
                     case "Exit":
                         connection.end();
