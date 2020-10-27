@@ -21,11 +21,36 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId + "\n");
-    // createEmployee();
     userPrompt();
 });
 
 // (READ/GET) Functions 
+function viewAll(data) {
+    connection.query("SELECT * FROM company_db.employee", data, function(err, results) {
+        if (err) throw err;
+        console.table(results);
+    })
+};
+
+// stuck below
+function viewByDepartment(data) {
+    connection.query("SELECT * FROM company_db.employee JOIN company_db.role ON company_db.employee.role_id=company_db.role.id", data, function(err, results) {
+        if (err) throw err;
+        console.table(results);
+    })
+};
+
+function viewByRole() {
+
+};
+
+function viewByManager() {
+
+};
+
+function viewBudget() {
+
+};
 
 // (CREATE/POST) Functions to add role, department or employee
 function addType(x) {
@@ -55,12 +80,11 @@ function addType(x) {
                         // addEmployee();
                         break;
                     case "Return":
-                        // userPrompt();
+                        userPrompt();
                         break;
                 }
             });
         }
-
 // addRole
 // addDepartment
 // function addEmployee() {
@@ -103,11 +127,18 @@ function deleteType(x) {
                 }
             });
         }
-
 // deleteRole
 // deleteDepartment
 // deleteEmployee
 
+// (CHANGE/MODIFY) Functions to mod
+function changeRole() {
+
+};
+
+function updateManager() {
+
+};
 
 function userPrompt() {
     inquirer
@@ -136,10 +167,10 @@ function userPrompt() {
             }).then(function (answer) {
                 switch (answer.actionChoice) {
                     case "View all employees.":
-                        // viewAll();
+                        viewAll();
                         break;
                     case "View employees by department.":
-                        // viewByDepartment();
+                        viewByDepartment();
                         break;
                     case "View employees by role.":
                         // viewByRole();
@@ -170,16 +201,13 @@ function userPrompt() {
 
 
 
-//     type: "list",
-//     message: "What type would you like to delete?",
-//     name: "deleteType",
-//     choices: [
-//         "Department",
-//         "Role",
-//         "Employee"
-//     ],
-//     when: (answer) => answer.actionChoice === "Delete a department, role, or employee."
-// }, {
+
+
+
+
+
+// TO BE SET UP
+
 //     type: "input",
 //     message: "What is the new department name?",
 //     name: "newDepartment",
