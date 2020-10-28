@@ -189,45 +189,129 @@ function addDepartment() {
             userPrompt();
         })
 };
-// addEmployee - NOT WORKING - MINIMUM
+
+// // addEmployee - NOT WORKING - MINIMUM - TRY 1
+// function addEmployee() {
+//     connection.query(
+//         "SELECT role.title, role.id FROM company_db.role", null, function (err, results) {
+//             if (err) throw err;
+//             let rolechoice = new Map(results.map(y => ([y.title, y.id])));
+
+//             inquirer
+//                 .prompt([{
+//                     type: "input",
+//                     message: "What is the new employee's first name?",
+//                     name: "employeeFirstName"
+//                 }, {
+//                     type: "input",
+//                     message: "What is the new employee's last name?",
+//                     name: "employeeLastName"
+//                 }, {
+//                     type: "list",
+//                     message: "What is the new employee's role?",
+//                     choices: Array.from(rolechoice.keys()),
+//                     name: "chooseRole",
+//                 }]).then(function (answer) {
+//                     var query = connection.query(
+//                         "INSERT INTO employee SET ?",
+//                         {
+//                             first_name: answer.employeeFirstName,
+//                             last_name: answer.employeeLastName,
+//                             // role_id: 
+//                             // title: rolechoice.get(answer.chooseRole)
+//                         },
+//                         function (err, res) {
+//                             if (err) throw err;
+//                         }
+//                     );
+//                     //returns back to initial
+//                     userPrompt();
+//                 })
+//         }
+//     )
+// }
+
+// // addEmployee - NOT WORKING - MINIMUM - TRY 2
+
+
+
 function addEmployee() {
-    connection.query(
-        "SELECT role.title, role.id FROM company_db.role", null, function (err, results) {
+    var roleChoice = [];
+    connection.query("SELECT * FROM role", function (err, result) {
+        if (err) throw err;
+        for (var i = 0; i < result.length; i++) {
+            var roleList = result[i].title;
+            roleChoice.push(roleList);
+        };
+
+        var deptChoice = [];
+        connection.query("SELECT * FROM department", function (err, data) {
             if (err) throw err;
-            let rolechoice = new Map(results.map(y => ([y.title, y.id])));
+            for (var i = 0; i < data.length; i++) {
+                var deptList = data[i].name;
+                deptChoice.push(deptList);
+            }
 
             inquirer
-                .prompt([{
-                    type: "input",
-                    message: "What is the new employee's first name?",
-                    name: "employeeFirstName"
-                }, {
-                    type: "input",
-                    message: "What is the new employee's last name?",
-                    name: "employeeLastName"
-                }, {
-                    type: "list",
-                    message: "What is the new employee's role?",
-                    choices: Array.from(rolechoice.keys()),
-                    name: "chooseRole",
-                }]).then(function (answer) {
-                    var query = connection.query(
+                .prompt([
+                    {
+                        type: "input",
+                        message: "What is the new employee's first name?",
+                        name: "employeeFirstName"
+                    }, {
+                        type: "input",
+                        message: "What is the new employee's last name?",
+                        name: "employeeLastName"
+                    },
+                    {
+                        name: "role_id",
+                        type: "list",
+                        message: "Select employee role:",
+                        choices: roleChoice
+                    },
+                    {
+                        name: "department_id",
+                        type: "list",
+                        message: "Select employee's department:",
+                        choices: deptChoice
+                    },
+
+                ]).then(function (answer) {
+                    var chosenRole;
+                    for (var i = 0; i < result.length; i++) {
+                        if (result[i].title === answer.role_id) {
+                            chosenRole = result[i];
+                        }
+                    };
+
+                    var chosenDept;
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i].name === answer.department_id) {
+                            chosenDept = data[i];
+                        }
+                    };
+                    //connection to insert response into database  
+                    connection.query(
                         "INSERT INTO employee SET ?",
                         {
                             first_name: answer.employeeFirstName,
                             last_name: answer.employeeLastName,
-                            // title: rolechoice.get(answer.chooseRole)
+                            role_id: chosenRole.id,
+                            department_id: chosenDept.id
                         },
-                        function (err, res) {
+                        function (err) {
                             if (err) throw err;
+                            console.log("Employee " + answer.employeeFirstName + " " + answer.employeeLastName + " successfully added!");
+                            userPrompt();
                         }
                     );
-                    //returns back to initial
-                    userPrompt();
                 })
-        }
-    )
-}
+        });
+    })
+};
+
+
+
 
 //----- (REMOVE/DELETE) Functions to delete role, department or employee
 function deleteType(x) {
