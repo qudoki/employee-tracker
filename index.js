@@ -95,16 +95,6 @@ function viewByRole(data) {
     })
 };
 
-// NOT WORKING - NTH
-function viewByManager() {
-
-};
-
-// NOT WORKING - NTH
-function viewBudget() {
-
-};
-
 //----- (CREATE/POST) Functions to add role, department or employee
 function addType(x) {
     inquirer
@@ -190,51 +180,7 @@ function addDepartment() {
         })
 };
 
-// // addEmployee - NOT WORKING - MINIMUM - TRY 1
-// function addEmployee() {
-//     connection.query(
-//         "SELECT role.title, role.id FROM company_db.role", null, function (err, results) {
-//             if (err) throw err;
-//             let rolechoice = new Map(results.map(y => ([y.title, y.id])));
-
-//             inquirer
-//                 .prompt([{
-//                     type: "input",
-//                     message: "What is the new employee's first name?",
-//                     name: "employeeFirstName"
-//                 }, {
-//                     type: "input",
-//                     message: "What is the new employee's last name?",
-//                     name: "employeeLastName"
-//                 }, {
-//                     type: "list",
-//                     message: "What is the new employee's role?",
-//                     choices: Array.from(rolechoice.keys()),
-//                     name: "chooseRole",
-//                 }]).then(function (answer) {
-//                     var query = connection.query(
-//                         "INSERT INTO employee SET ?",
-//                         {
-//                             first_name: answer.employeeFirstName,
-//                             last_name: answer.employeeLastName,
-//                             // role_id: 
-//                             // title: rolechoice.get(answer.chooseRole)
-//                         },
-//                         function (err, res) {
-//                             if (err) throw err;
-//                         }
-//                     );
-//                     //returns back to initial
-//                     userPrompt();
-//                 })
-//         }
-//     )
-// }
-
-// // addEmployee - NOT WORKING - MINIMUM - TRY 2
-
-
-
+// // addEmployee - WORKING - MINIMUM - TRY 2
 function addEmployee() {
     var roleChoice = [];
     connection.query("SELECT * FROM role", function (err, result) {
@@ -243,7 +189,6 @@ function addEmployee() {
             var roleList = result[i].title;
             roleChoice.push(roleList);
         };
-
         var deptChoice = [];
         connection.query("SELECT * FROM department", function (err, data) {
             if (err) throw err;
@@ -251,7 +196,6 @@ function addEmployee() {
                 var deptList = data[i].name;
                 deptChoice.push(deptList);
             }
-
             inquirer
                 .prompt([
                     {
@@ -275,7 +219,6 @@ function addEmployee() {
                         message: "Select employee's department:",
                         choices: deptChoice
                     },
-
                 ]).then(function (answer) {
                     var chosenRole;
                     for (var i = 0; i < result.length; i++) {
@@ -283,7 +226,6 @@ function addEmployee() {
                             chosenRole = result[i];
                         }
                     };
-
                     var chosenDept;
                     for (var i = 0; i < data.length; i++) {
                         if (data[i].name === answer.department_id) {
@@ -309,9 +251,6 @@ function addEmployee() {
         });
     })
 };
-
-
-
 
 //----- (REMOVE/DELETE) Functions to delete role, department or employee
 function deleteType(x) {
@@ -346,17 +285,47 @@ function deleteType(x) {
                 }
             });
 }
-// deleteRole - NOT WORKING - NTH
-function deleteRole() {
 
-};
-// deleteDepartment - NOT WORKING - NTH
-function deleteDepartment() {
-
-};
-// deleteEmployee - NOT WORKING - NTH
+// deleteEmployee - WORKING - NTH
 function deleteEmployee() {
+    var empChoice = [];
+    connection.query("SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee", function (err, resEmp) {
+        if (err) throw err;
+        for (var i = 0; i < resEmp.length; i++) {
+            var empList = resEmp[i].name;
+            empChoice.push(empList);
+        };
 
+        inquirer
+            .prompt([
+                {
+                    name: "employee_id",
+                    type: "list",
+                    message: "Select the employee you would like to remove:",
+                    choices: empChoice
+                },
+            ])
+            .then(function (answer) {
+
+                var chosenEmp;
+                for (var i = 0; i < resEmp.length; i++) {
+                    if (resEmp[i].name === answer.employee_id) {
+                        chosenEmp = resEmp[i];
+                    }
+                };
+
+                connection.query(
+                    "DELETE FROM employee WHERE id=?",
+                    [chosenEmp.id],
+
+                    function (err) {
+                        if (err) throw err;
+                        console.log("Employee successfully removed!");
+                        userPrompt();
+                    }
+                );
+            });
+    })
 };
 
 //----- (CHANGE/MODIFY) Functions to mod
@@ -406,11 +375,6 @@ function changeRole() {
                 }
             );
         })
-};
-
-// NOT WORKING - NTH
-function updateManager() {
-
 };
 
 //----- Function to run starting inquirer
@@ -476,13 +440,69 @@ function userPrompt() {
 
 
 
+// ===== NON-WORKING BONUS FUNCTIONS BELOW
 
+// // addEmployee - NOT WORKING - MINIMUM - TRY 1
+// function addEmployee() {
+//     connection.query(
+//         "SELECT role.title, role.id FROM company_db.role", null, function (err, results) {
+//             if (err) throw err;
+//             let rolechoice = new Map(results.map(y => ([y.title, y.id])));
 
+//             inquirer
+//                 .prompt([{
+//                     type: "input",
+//                     message: "What is the new employee's first name?",
+//                     name: "employeeFirstName"
+//                 }, {
+//                     type: "input",
+//                     message: "What is the new employee's last name?",
+//                     name: "employeeLastName"
+//                 }, {
+//                     type: "list",
+//                     message: "What is the new employee's role?",
+//                     choices: Array.from(rolechoice.keys()),
+//                     name: "chooseRole",
+//                 }]).then(function (answer) {
+//                     var query = connection.query(
+//                         "INSERT INTO employee SET ?",
+//                         {
+//                             first_name: answer.employeeFirstName,
+//                             last_name: answer.employeeLastName,
+//                             // role_id: 
+//                             // title: rolechoice.get(answer.chooseRole)
+//                         },
+//                         function (err, res) {
+//                             if (err) throw err;
+//                         }
+//                     );
+//                     //returns back to initial
+//                     userPrompt();
+//                 })
+//         }
+//     )
+// }
 
+// NOT WORKING - NTH
+function updateManager() {
 
-// TO BE SET UP
+};
 
-//     type: "input",
-//     message: "What is the new department name?",
-//     name: "newDepartment",
-//     when: (answer) => answer.addType === "Department"
+// deleteRole - NOT WORKING - NTH
+function deleteRole() {
+
+};
+// deleteDepartment - NOT WORKING - NTH
+function deleteDepartment() {
+
+};
+
+// NOT WORKING - NTH
+function viewByManager() {
+
+};
+
+// NOT WORKING - NTH
+function viewBudget() {
+
+};
