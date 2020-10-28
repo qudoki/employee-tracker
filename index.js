@@ -95,286 +95,299 @@ function viewByRole(data) {
     })
 };
 
-        // NOT WORKING - NTH
-        function viewByManager() {
+// NOT WORKING - NTH
+function viewByManager() {
 
-        };
+};
 
-        // NOT WORKING - NTH
-        function viewBudget() {
+// NOT WORKING - NTH
+function viewBudget() {
 
-        };
+};
 
-        //----- (CREATE/POST) Functions to add role, department or employee
-        function addType(x) {
-            inquirer
-                .prompt(
-                    // Would you like to add a role, department or employee?
-                    {
-                        type: "list",
-                        message: "What type would you like to add?",
-                        name: "addType",
-                        choices: [
-                            "Department",
-                            "Role",
-                            "Employee",
-                            "Return"
-                        ],
-                        when: (answer) => x === "Add a department, role, or employee."
-                    }).then(function (answer) {
-                        switch (answer.addType) {
-                            case "Department":
-                                addDepartment();
-                                break;
-                            case "Role":
-                                addRole();
-                                break;
-                            case "Employee":
-                                addEmployee();
-                                break;
-                            case "Return":
-                                userPrompt();
-                                break;
-                        }
-                    });
-        }
+//----- (CREATE/POST) Functions to add role, department or employee
+function addType(x) {
+    inquirer
+        .prompt(
+            // Would you like to add a role, department or employee?
+            {
+                type: "list",
+                message: "What type would you like to add?",
+                name: "addType",
+                choices: [
+                    "Department",
+                    "Role",
+                    "Employee",
+                    "Return"
+                ],
+                when: (answer) => x === "Add a department, role, or employee."
+            }).then(function (answer) {
+                switch (answer.addType) {
+                    case "Department":
+                        addDepartment();
+                        break;
+                    case "Role":
+                        addRole();
+                        break;
+                    case "Employee":
+                        addEmployee();
+                        break;
+                    case "Return":
+                        userPrompt();
+                        break;
+                }
+            });
+}
 
-        // addRole - WORKING - MINIMUM
-        function addRole() {
+// addRole - WORKING - MINIMUM
+function addRole() {
+    inquirer
+        .prompt([{
+            type: "input",
+            message: "What role would you like to add?",
+            name: "roleName",
+        }, {
+            type: "input",
+            message: "What is the salary of this position?",
+            name: "roleSalary",
+        }, {
+            type: "input",
+            message: "To what department should this role be assigned?",
+            name: "roleDepartment",
+        }]).then(function (answer) {
+            console.log(answer.roleName);
+            console.log(answer.roleSalary);
+            console.log(answer.roleDepartment);
+            var query = connection.query(
+                "INSERT INTO role SET ?",
+                {
+                    title: answer.roleName,
+                    salary: answer.roleSalary,
+                    department_id: answer.roleDepartment
+                },
+                function (err, res) {
+                    if (err) throw err;
+                }
+            );
+            // returns back to initial
+            userPrompt();
+        })
+};
+// addDepartment - WORKING - MINIMUM
+function addDepartment() {
+    inquirer
+        .prompt({
+            type: "input",
+            message: "What department would you like to add?",
+            name: "departmentName",
+        }).then(function (answer) {
+            var query = connection.query(
+                "INSERT INTO department SET ?",
+                { name: answer.departmentName }
+            );
+            // returns back to initial
+            userPrompt();
+        })
+};
+// addEmployee - NOT WORKING - MINIMUM
+function addEmployee() {
+    connection.query(
+        "SELECT role.title, role.id FROM company_db.role", null, function (err, results) {
+            if (err) throw err;
+            let rolechoice = new Map(results.map(y => ([y.title, y.id])));
+
             inquirer
                 .prompt([{
                     type: "input",
-                    message: "What role would you like to add?",
-                    name: "roleName",
+                    message: "What is the new employee's first name?",
+                    name: "employeeFirstName"
                 }, {
                     type: "input",
-                    message: "What is the salary of this position?",
-                    name: "roleSalary",
+                    message: "What is the new employee's last name?",
+                    name: "employeeLastName"
                 }, {
-                    type: "input",
-                    message: "To what department should this role be assigned?",
-                    name: "roleDepartment",
+                    type: "list",
+                    message: "What is the new employee's role?",
+                    choices: Array.from(rolechoice.keys()),
+                    name: "chooseRole",
                 }]).then(function (answer) {
-                    console.log(answer.roleName);
-                    console.log(answer.roleSalary);
-                    console.log(answer.roleDepartment);
                     var query = connection.query(
-                        "INSERT INTO role SET ?",
+                        "INSERT INTO employee SET ?",
                         {
-                            title: answer.roleName,
-                            salary: answer.roleSalary,
-                            department_id: answer.roleDepartment
+                            first_name: answer.employeeFirstName,
+                            last_name: answer.employeeLastName,
+                            // title: rolechoice.get(answer.chooseRole)
                         },
                         function (err, res) {
                             if (err) throw err;
                         }
                     );
-                    // returns back to initial
+                    //returns back to initial
                     userPrompt();
                 })
-        };
-        // addDepartment - WORKING - MINIMUM
-        function addDepartment() {
-            inquirer
-                .prompt({
-                    type: "input",
-                    message: "What department would you like to add?",
-                    name: "departmentName",
-                }).then(function (answer) {
-                    var query = connection.query(
-                        "INSERT INTO department SET ?",
-                        { name: answer.departmentName }
-                    );
-                    // returns back to initial
-                    userPrompt();
-                })
-        };
-        // addEmployee - NOT WORKING - MINIMUM
-        function addEmployee() {
-            inquirer
-                .prompt([{
-                    type: "input",
-                    message: "What is the employee's first name?",
-                    name: "employeeFirstName"
-                }, {
-                    type: "input",
-                    message: "What is the employee's last name?",
-                    name: "employeeLastName"
-                }, {
-
-                }, {
-
-                }, {
-
-                }, {
-
-                }]).then(function (answer) {
-                    var query = connection.query(
-                        "INSERT INTO employee SET ?"
-                    )
-                })
-                    
         }
+    )
+}
 
-        //----- (REMOVE/DELETE) Functions to delete role, department or employee
-        function deleteType(x) {
-            inquirer
-                .prompt(
-                    // Would you like to delete a role, department or employee?
-                    {
-                        type: "list",
-                        message: "What type would you like to delete?",
-                        name: "deleteType",
-                        choices: [
-                            "Department",
-                            "Role",
-                            "Employee",
-                            "Return"
-                        ],
-                        when: (answer) => x === "Delete a department, role, or employee."
-                    }).then(function (answer) {
-                        switch (answer.deleteType) {
-                            case "Department":
-                                deleteDepartment();
-                                break;
-                            case "Role":
-                                deleteRole();
-                                break;
-                            case "Employee":
-                                deleteEmployee();
-                                break;
-                            case "Return":
-                                userPrompt();
-                                break;
-                        }
-                    });
-        }
-        // deleteRole - NOT WORKING - NTH
-        function deleteRole() {
+//----- (REMOVE/DELETE) Functions to delete role, department or employee
+function deleteType(x) {
+    inquirer
+        .prompt(
+            // Would you like to delete a role, department or employee?
+            {
+                type: "list",
+                message: "What type would you like to delete?",
+                name: "deleteType",
+                choices: [
+                    "Department",
+                    "Role",
+                    "Employee",
+                    "Return"
+                ],
+                when: (answer) => x === "Delete a department, role, or employee."
+            }).then(function (answer) {
+                switch (answer.deleteType) {
+                    case "Department":
+                        deleteDepartment();
+                        break;
+                    case "Role":
+                        deleteRole();
+                        break;
+                    case "Employee":
+                        deleteEmployee();
+                        break;
+                    case "Return":
+                        userPrompt();
+                        break;
+                }
+            });
+}
+// deleteRole - NOT WORKING - NTH
+function deleteRole() {
 
-        };
-        // deleteDepartment - NOT WORKING - NTH
-        function deleteDepartment() {
+};
+// deleteDepartment - NOT WORKING - NTH
+function deleteDepartment() {
 
-        };
-        // deleteEmployee - NOT WORKING - NTH
-        function deleteEmployee() {
+};
+// deleteEmployee - NOT WORKING - NTH
+function deleteEmployee() {
 
-        };
+};
 
-        //----- (CHANGE/MODIFY) Functions to mod
+//----- (CHANGE/MODIFY) Functions to mod
 
-        // WORKING - MINIMUM
-        function changeRole() {
+// WORKING - MINIMUM
+function changeRole() {
+    connection.query(
+        "SELECT employee.first_name, employee.id FROM company_db.employee",
+        null,
+        function (err, results) {
+            if (err) throw err;
+            // for every result row, maps first name to id
+            //eg: Map { 'John' => 1, 'Jane' => 2, 'Joey' => 3 }
+            let whochoices = new Map(results.map(q => ([q.first_name, q.id])));
+
             connection.query(
-                "SELECT employee.first_name, employee.id FROM company_db.employee",
+                "SELECT role.title, role.id FROM company_db.role",
                 null,
-                function (err, results) {
+                function (err, results2) {
                     if (err) throw err;
-                    // for every result row, maps first name to id
-                    //eg: Map { 'John' => 1, 'Jane' => 2, 'Joey' => 3 }
-                    let whochoices = new Map(results.map(q => ([q.first_name, q.id])));
 
-                    connection.query(
-                        "SELECT role.title, role.id FROM company_db.role",
-                        null,
-                        function (err, results2) {
-                            if (err) throw err;
-
-                            // role - title, id
-                            let newroles = new Map(results2.map(x => ([x.title, x.id])));
-                            inquirer
-                                .prompt([{
-                                    type: "list",
-                                    message: "Whose role would you like to change?",
-                                    choices: Array.from(whochoices.keys()),
-                                    name: "whoseRole",
-                                }, {
-                                    type: "list",
-                                    message: "What is the new role?",
-                                    choices: Array.from(newroles.keys()),
-                                    name: "whichRole",
-                                }]).then(function (answer) {
-                                    var query = connection.query(
-                                        "UPDATE company_db.employee SET role_id = ? WHERE id = ?",
-                                        [newroles.get(answer.whichRole), whochoices.get(answer.whoseRole)],
-                                        function (err, res) {
-                                            if (err) throw err;
-                                        }
-                                    );
-                                    // returns back to initial
-                                    userPrompt();
+                    // role - title, id
+                    let newroles = new Map(results2.map(x => ([x.title, x.id])));
+                    inquirer
+                        .prompt([{
+                            type: "list",
+                            message: "Whose role would you like to change?",
+                            choices: Array.from(whochoices.keys()),
+                            name: "whoseRole",
+                        }, {
+                            type: "list",
+                            message: "What is the new role?",
+                            choices: Array.from(newroles.keys()),
+                            name: "whichRole",
+                        }]).then(function (answer) {
+                            var query = connection.query(
+                                "UPDATE company_db.employee SET role_id = ? WHERE id = ?",
+                                [newroles.get(answer.whichRole), whochoices.get(answer.whoseRole)],
+                                function (err, res) {
+                                    if (err) throw err;
                                 }
-                                )
+                            );
+                            // returns back to initial
+                            userPrompt();
                         }
-                    );
-                })
-        };
+                        )
+                }
+            );
+        })
+};
 
-        // NOT WORKING - NTH
-        function updateManager() {
+// NOT WORKING - NTH
+function updateManager() {
 
-        };
+};
 
-        //----- Function to run starting inquirer
-        function userPrompt() {
-            inquirer
-                .prompt(
-                    {
-                        type: "list",
-                        message: "What would you like to do?",
-                        name: "actionChoice",
-                        choices: [
-                            // GET
-                            "View all employees.",
-                            "View employees by department.",
-                            "View employees by role.",
-                            "View employees by manager.",
-                            "View the total utilized budget of a department.",
-                            // POST
-                            "Add a department, role, or employee.",
-                            // DELETE
-                            "Delete a department, role, or employee.",
-                            // PUT OR MODIFY
-                            "Change an employee's role.",
-                            "Update an employee's manager.",
-                            // EXIT
-                            "Exit."
-                        ]
-                    }).then(function (answer) {
-                        switch (answer.actionChoice) {
-                            case "View all employees.":
-                                viewAll();
-                                break;
-                            case "View employees by department.":
-                                viewByDepartment();
-                                break;
-                            case "View employees by role.":
-                                viewByRole();
-                                break;
-                            case "View employees by manager.":
-                                viewByManager();
-                                break;
-                            case "View the total utilized budget of a department.":
-                                viewBudget();
-                                break;
-                            case "Add a department, role, or employee.":
-                                addType(answer.actionChoice);
-                                break;
-                            case "Delete a department, role, or employee.":
-                                deleteType(answer.actionChoice);
-                                break;
-                            case "Change an employee's role.":
-                                changeRole();
-                                break;
-                            case "Update an employee's manager.":
-                                updateManager();
-                                break;
-                            case "Exit":
-                                connection.end();
-                        };
-                    });
-        };
+//----- Function to run starting inquirer
+function userPrompt() {
+    inquirer
+        .prompt(
+            {
+                type: "list",
+                message: "What would you like to do?",
+                name: "actionChoice",
+                choices: [
+                    // GET
+                    "View all employees.",
+                    "View employees by department.",
+                    "View employees by role.",
+                    "View employees by manager.",
+                    "View the total utilized budget of a department.",
+                    // POST
+                    "Add a department, role, or employee.",
+                    // DELETE
+                    "Delete a department, role, or employee.",
+                    // PUT OR MODIFY
+                    "Change an employee's role.",
+                    "Update an employee's manager.",
+                    // EXIT
+                    "Exit."
+                ]
+            }).then(function (answer) {
+                switch (answer.actionChoice) {
+                    case "View all employees.":
+                        viewAll();
+                        break;
+                    case "View employees by department.":
+                        viewByDepartment();
+                        break;
+                    case "View employees by role.":
+                        viewByRole();
+                        break;
+                    case "View employees by manager.":
+                        viewByManager();
+                        break;
+                    case "View the total utilized budget of a department.":
+                        viewBudget();
+                        break;
+                    case "Add a department, role, or employee.":
+                        addType(answer.actionChoice);
+                        break;
+                    case "Delete a department, role, or employee.":
+                        deleteType(answer.actionChoice);
+                        break;
+                    case "Change an employee's role.":
+                        changeRole();
+                        break;
+                    case "Update an employee's manager.":
+                        updateManager();
+                        break;
+                    case "Exit":
+                        connection.end();
+                };
+            });
+};
 
 
 
