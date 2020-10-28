@@ -26,17 +26,38 @@ connection.connect(function (err) {
 
 //----- (READ/GET) Functions 
 function viewAll(data) {
-    connection.query("SELECT * FROM company_db.employee", data, function(err, results) {
+    connection.query("SELECT employee.id, employee.first_name, employee.last_name, employee.role_id, employee.manager_id, role.title, role.department_id, role.salary FROM company_db.employee JOIN company_db.role ON company_db.employee.role_id=company_db.role.id", data, function (err, results) {
         if (err) throw err;
         console.table(results);
     })
 };
 
-// NOT WORKING - MINIMUM
+// WORKING - MINIMUM
 function viewByDepartment(data) {
-    connection.query("SELECT * FROM company_db.employee JOIN company_db.role ON company_db.employee.role_id=company_db.role.id", data, function(err, results) {
+    let choices = [];
+    connection.query("SELECT department.name FROM company_db.department", data, function (err, results) {
         if (err) throw err;
-        console.table(results);
+        choices = results;
+        inquirer
+            .prompt([{
+                type: "list",
+                message: "Which department?",
+                choices: choices,
+                name: "departmentView",
+            }]).then(function (answer) {
+                connection.query(`SELECT employee.id, employee.first_name, employee.last_name, employee.role_id, employee.manager_id, role.title, role.department_id, role.salary, department.name
+                        FROM company_db.employee 
+                        JOIN company_db.role
+                        ON company_db.employee.role_id=company_db.role.id
+                        JOIN company_db.department 
+                        ON company_db.department.id=company_db.role.department_id
+                        WHERE company_db.department.name = ?
+                        ORDER BY department_id, first_name ASC
+                        `, answer.departmentView, function (err, results) {
+                    if (err) throw err;
+                    console.table(results);
+                })
+            })
     })
 };
 
@@ -59,7 +80,7 @@ function viewBudget() {
 function addType(x) {
     inquirer
         .prompt(
-// Would you like to add a role, department or employee?
+            // Would you like to add a role, department or employee?
             {
                 type: "list",
                 message: "What type would you like to add?",
@@ -87,19 +108,59 @@ function addType(x) {
                         break;
                 }
             });
-        }
+}
 
-    // addRole - NOT WORKING - MINIMUM
+// addRole - WORKING - MINIMUM
 function addRole() {
-
+    inquirer
+        .prompt([{
+            type: "input",
+            message: "What role would you like to add?",
+            name: "roleName",
+        }, {
+            type: "input",
+            message: "What is the salary of this position?",
+            name: "roleSalary",
+        }, {
+            type: "input",
+            message: "To what department should this role be assigned?",
+            name: "roleDepartment",
+        }]).then(function (answer) {
+            console.log(answer.roleName);
+            console.log(answer.roleSalary);
+            console.log(answer.roleDepartment);
+            var query = connection.query(
+                "INSERT INTO role SET ?",
+                {
+                    title: answer.roleName,
+                    salary: answer.roleSalary,
+                    department_id: answer.roleDepartment
+                },
+                function (err, res) {
+                    if (err) throw err;
+                }
+            );
+            // returns back to initial
+            userPrompt();
+        })
 };
-    // addDepartment - NOT WORKING - MINIMUM
+// addDepartment - WORKING - MINIMUM
 function addDepartment() {
-
+    inquirer
+        .prompt({
+            type: "input",
+            message: "What department would you like to add?",
+            name: "departmentName",
+        }).then(function (answer) {
+            var query = connection.query(
+                "INSERT INTO department SET ?",
+                { name: answer.departmentName }
+            )
+            // HELP! - is this callback function correct?
+        }, userPrompt)
 };
-    // addEmployee - NOT WORKING - MINIMUM
+// addEmployee - NOT WORKING - MINIMUM
 function addEmployee() {
-    console.log("Creating a new employee...\n");
     var query = connection.query(
         "INSERT INTO employee SET ?"
     )
@@ -109,7 +170,7 @@ function addEmployee() {
 function deleteType(x) {
     inquirer
         .prompt(
-// Would you like to delete a role, department or employee?
+            // Would you like to delete a role, department or employee?
             {
                 type: "list",
                 message: "What type would you like to delete?",
@@ -137,26 +198,69 @@ function deleteType(x) {
                         break;
                 }
             });
-        }
-    // deleteRole - NOT WORKING - NTH
+}
+// deleteRole - NOT WORKING - NTH
 function deleteRole() {
 
 };
-    // deleteDepartment - NOT WORKING - NTH
+// deleteDepartment - NOT WORKING - NTH
 function deleteDepartment() {
 
 };
-    // deleteEmployee - NOT WORKING - NTH
+// deleteEmployee - NOT WORKING - NTH
 function deleteEmployee() {
 
 };
 
 //----- (CHANGE/MODIFY) Functions to mod
 
-// NOT WORKING - MINIMUM
+// WORKING - MINIMUM
 function changeRole() {
+    connection.query(
+        "SELECT employee.first_name, employee.id FROM company_db.employee",
+        null,
+        function (err, results) {
+            if (err) throw err;
+            // for every result row, maps first name to id
+            //eg: Map { 'John' => 1, 'Jane' => 2, 'Joey' => 3 }
+            let whochoices = new Map(results.map(q => ([q.first_name, q.id])));
 
+            connection.query(
+                "SELECT role.title, role.id FROM company_db.role",
+                null,
+                function (err, results2) {
+                    if (err) throw err;
+
+                    // role - title, id
+                    let newroles = new Map(results2.map(x => ([x.title, x.id])));
+                    inquirer
+                        .prompt([{
+                            type: "list",
+                            message: "Whose role would you like to change?",
+                            choices: Array.from(whochoices.keys()),
+                            name: "whoseRole",
+                        }, {
+                            type: "list",
+                            message: "What is the new role?",
+                            choices: Array.from(newroles.keys()),
+                            name: "whichRole",
+                        }]).then(function (answer) {
+                            var query = connection.query(
+                                "UPDATE company_db.employee SET role_id = ? WHERE id = ?",
+                                [newroles.get(answer.whichRole), whochoices.get(answer.whoseRole)],
+                                function (err, res) {
+                                    if (err) throw err;
+                                }
+                            );
+                            // returns back to initial
+                            userPrompt();
+                        }
+                        )
+                }
+            );
+        })
 };
+
 // NOT WORKING - NTH
 function updateManager() {
 
